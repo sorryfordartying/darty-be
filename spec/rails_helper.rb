@@ -5,7 +5,9 @@ require_relative '../config/environment'
 # Prevent database truncation if the environment is production
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 require 'rspec/rails'
+
 # Add additional requires below this line. Rails is not loaded until this point!
+require 'vcr'
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
@@ -60,4 +62,30 @@ RSpec.configure do |config|
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
+end
+
+Shoulda::Matchers.configure do |config|
+  config.integrate do |with|
+    with.test_framework :rspec
+    with.library :rails
+  end
+end
+
+RSpec.configure do |config|
+  config.include FactoryBot::Syntax::Methods
+end
+
+VCR.configure do |c|
+  c.before_record do |i|
+    i.response.body.force_encoding('UTF-8')
+  end
+  c.preserve_exact_body_bytes do |http_message|
+    http_message.body.encoding.name == 'ASCII-8BIT' ||
+      !http_message.body.valid_encoding?
+  end
+  c.cassette_library_dir = 'spec/vcr'
+  c.hook_into :webmock
+  c.configure_rspec_metadata!
+  # Below is how to filter out API keys so they don't end up in VCRs and on your repo
+  # c.filter_sensitive_data('<OPENAI_API_KEY>') { ENV['OPENAI_API_KEY'] }
 end
