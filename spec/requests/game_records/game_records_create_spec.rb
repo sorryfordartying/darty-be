@@ -5,7 +5,7 @@ RSpec.describe 'it creates a new game record' do
     expect(GameRecord.count).to eq(0)
 
     game_type = '01'
-    player = "JRK"
+    player = 'JRK'
     starting_score = 301
     number_of_darts = 10
 
